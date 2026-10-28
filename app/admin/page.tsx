@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Plus, Search, Trash2, CheckSquare, Square, LogOut, Loader2 } from 'lucide-react';
+import { Plus, Search, Trash2, CheckSquare, Square, LogOut, Loader2, MoreVertical, Edit3 } from 'lucide-react';
 import { Product } from '@/types';
 import { supabase } from '@/lib/supabase';
 
@@ -16,7 +16,16 @@ export default function AdminDashboardPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Carga inicial de productos declarada internamente en useEffect
+  // Menú flotante activo
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // Cerrar menú al hacer clic fuera
+  useEffect(() => {
+    const handleOutsideClick = () => setOpenMenuId(null);
+    window.addEventListener('click', handleOutsideClick);
+    return () => window.removeEventListener('click', handleOutsideClick);
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -37,8 +46,10 @@ export default function AdminDashboardPage() {
           originalPrice: item.original_price,
           discountPrice: item.discount_price,
           discountPercentage: item.discount_percentage,
+          promoType: item.promo_type || 'percentage',
           stock: item.stock,
           imageUrl: item.image_url,
+          imageUrls: Array.isArray(item.image_urls) && item.image_urls.length > 0 ? item.image_urls : [item.image_url],
         }));
         setProducts(mappedProducts);
       }
@@ -52,14 +63,12 @@ export default function AdminDashboardPage() {
     };
   }, []);
 
-  // Actualización rápida de stock con estado optimista
   const handleStockChange = async (id: string, delta: number) => {
     const target = products.find((p) => p.id === id);
     if (!target) return;
 
     const newStock = Math.max(0, target.stock + delta);
 
-    // Actualización visual inmediata
     setProducts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, stock: newStock } : p))
     );
@@ -71,21 +80,34 @@ export default function AdminDashboardPage() {
 
     if (error) {
       console.error('Error actualizando stock:', error);
-      // Revertir en caso de fallo de red
       setProducts((prev) =>
         prev.map((p) => (p.id === id ? { ...p, stock: target.stock } : p))
       );
     }
   };
 
-  // Eliminación múltiple con estado optimista
+  const handleDeleteSingle = async (id: string) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar este producto?')) return;
+
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      alert('Error al eliminar el producto: ' + error.message);
+      router.refresh();
+    }
+  };
+
   const handleDeleteSelected = async () => {
     if (selectedIds.length === 0) return;
     if (!confirm(`¿Eliminar ${selectedIds.length} producto(s) seleccionado(s)?`)) return;
 
     const idsToDelete = [...selectedIds];
 
-    // Remover visualmente de inmediato
     setProducts((prev) => prev.filter((p) => !idsToDelete.includes(p.id)));
     setSelectedIds([]);
     setIsSelectionMode(false);
@@ -97,7 +119,6 @@ export default function AdminDashboardPage() {
 
     if (error) {
       alert('Error eliminando productos: ' + error.message);
-      // Restaurar datos si la base de datos rechaza la operación
       const { data } = await supabase
         .from('products')
         .select('*')
@@ -111,6 +132,7 @@ export default function AdminDashboardPage() {
             originalPrice: item.original_price,
             discountPrice: item.discount_price,
             discountPercentage: item.discount_percentage,
+            promoType: item.promo_type || 'percentage',
             stock: item.stock,
             imageUrl: item.image_url,
           }))
@@ -186,6 +208,8 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
             {filtered.map((product, index) => {
               const isSelected = selectedIds.includes(product.id);
+              const isMenuOpen = openMenuId === product.id;
+
               return (
                 <div
                   key={product.id}
@@ -193,6 +217,7 @@ export default function AdminDashboardPage() {
                     isSelected ? 'border-emerald-600 ring-2 ring-emerald-500/20 bg-emerald-50/40' : 'border-slate-200'
                   }`}
                 >
+                  {/* Selección múltiple */}
                   {isSelectionMode && (
                     <button
                       onClick={() =>
@@ -202,7 +227,7 @@ export default function AdminDashboardPage() {
                             : [...prev, product.id]
                         )
                       }
-                      className="absolute top-2 right-2 z-10 bg-white rounded-lg p-1 shadow-xs"
+                      className="absolute top-2 left-2 z-10 bg-white rounded-lg p-1 shadow-xs"
                     >
                       {isSelected ? (
                         <CheckSquare className="w-5 h-5 text-emerald-600" />
@@ -212,9 +237,54 @@ export default function AdminDashboardPage() {
                     </button>
                   )}
 
+                  {/* Menú Flotante de 3 Puntos */}
+                  {!isSelectionMode && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(isMenuOpen ? null : product.id);
+                        }}
+                        className="p-1.5 bg-white/90 hover:bg-white text-slate-700 hover:text-slate-900 rounded-lg shadow-sm border border-slate-200/80 transition active:scale-90"
+                        title="Opciones"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+
+                      {isMenuOpen && (
+                        <div
+                          onClick={(e) => e.stopPropagation()}
+                          className="absolute right-0 mt-1 w-36 bg-white rounded-2xl shadow-xl border border-slate-200 py-1.5 z-30 animate-fadeIn"
+                        >
+                          <Link
+                            href={`/admin/editar/${product.id}`}
+                            className="w-full text-left px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 flex items-center gap-2 transition"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" /> Editar
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              handleDeleteSingle(product.id);
+                            }}
+                            className="w-full text-left px-3.5 py-2 text-xs font-bold text-red-600 hover:bg-red-50 flex items-center gap-2 transition border-t border-slate-100"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Eliminar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   <div>
                     <div className="bg-amber-400 text-black text-xs font-bold px-2 py-0.5 rounded-md w-fit mb-2">
-                      {product.discountPercentage}% OFF
+                      {product.promoType === '2x1'
+                        ? 'PROMO 2x1'
+                        : product.promoType === '3x2'
+                        ? 'PROMO 3x2'
+                        : `${product.discountPercentage}% OFF`}
                     </div>
 
                     <div className="relative w-full h-28 sm:h-36 mb-2 rounded-xl overflow-hidden bg-slate-100">
@@ -222,7 +292,7 @@ export default function AdminDashboardPage() {
                         src={product.imageUrl}
                         alt={product.name}
                         fill
-                        priority = {index < 2 }
+                        priority={index < 2}
                         sizes="200px"
                         className="object-cover"
                       />
@@ -232,10 +302,11 @@ export default function AdminDashboardPage() {
                       {product.name}
                     </h3>
                     <p className="text-sm sm:text-base font-extrabold text-emerald-700 mt-1">
-                      ${product.discountPrice}
+                      ${product.promoType === 'percentage' ? product.discountPrice : product.originalPrice}
                     </p>
                   </div>
 
+                  {/* Controles de Stock */}
                   <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between bg-slate-50 rounded-xl px-2 py-1">
                     <button
                       onClick={() => handleStockChange(product.id, -1)}
