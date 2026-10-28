@@ -1,69 +1,70 @@
 'use client';
 
-import { useState } from 'react';
-import { ShoppingCart, Search, MapPin, Store } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ShoppingCart, Search, MapPin, Store, Loader2 } from 'lucide-react';
 import { ProductCard } from '@/components/ProductCard';
 import { StickyCartBar } from '@/components/StickyCartBar';
 import { CartDrawer } from '@/components/CartDrawer';
 import { useCart } from '@/context/CartContext';
 import { Product } from '@/types';
-
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Shampoo TRESemmé 400ml',
-    originalPrice: 15000,
-    discountPrice: 10500,
-    discountPercentage: 30,
-    stock: 5,
-    imageUrl: 'https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?w=400&auto=format&fit=crop&q=80',
-  },
-  {
-    id: '2',
-    name: 'Crema Hidratante Dermaglós 200ml',
-    originalPrice: 12000,
-    discountPrice: 6000,
-    discountPercentage: 50,
-    stock: 2,
-    imageUrl: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&auto=format&fit=crop&q=80',
-  },
-  {
-    id: '3',
-    name: 'Alcohol en Gel 500ml',
-    originalPrice: 3000,
-    discountPrice: 2100,
-    discountPercentage: 30,
-    stock: 8,
-    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&auto=format&fit=crop&q=80',
-  },
-];
+import { supabase } from '@/lib/supabase';
 
 export default function CatalogPage() {
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { totalItems } = useCart();
 
-  const filteredProducts = MOCK_PRODUCTS.filter((product) =>
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error cargando catálogo:', error);
+      } else if (data) {
+        const mappedProducts: Product[] = data.map((item) => ({
+          id: item.id,
+          name: item.name,
+          originalPrice: item.original_price,
+          discountPrice: item.discount_price,
+          discountPercentage: item.discount_percentage,
+          stock: item.stock,
+          imageUrl: item.image_url,
+          expirationDate: item.expiration_date,
+        }));
+        setProducts(mappedProducts);
+      }
+      setLoading(false);
+    };
+
+    fetchProducts();
+  }, []);
+
+  const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <main className="min-h-screen pb-28 md:pb-16">
-      {/* Header Responsive */}
       <header className="bg-emerald-800 text-white p-4 md:p-6 sticky top-0 z-30 shadow-md backdrop-blur-md bg-emerald-800/95">
         <div className="max-w-6xl mx-auto space-y-3">
           <div className="flex justify-between items-center gap-4">
             <div className="flex items-center gap-2">
               <Store className="w-7 h-7 text-amber-400 hidden sm:block" />
               <div>
-                <h1 className="text-lg sm:text-2xl font-black tracking-wide">FARMACIA PRINCIPAL</h1>
+                <h1 className="text-lg sm:text-2xl font-black tracking-wide">FARMACIA SAN JOSÉ</h1>
                 <p className="text-xs sm:text-sm text-emerald-100 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-amber-300" /> Esteban Echeverría 394 • Canastito de Ofertas
+                  <MapPin className="w-3.5 h-3.5 text-amber-300" /> Av. Principal 1234 • Canastito de Ofertas
                 </p>
               </div>
             </div>
 
-            {/* Botón Carrito Header */}
             <button
               onClick={() => setIsDrawerOpen(true)}
               className="relative p-3 bg-emerald-900/80 hover:bg-emerald-900 rounded-2xl text-white transition active:scale-95 shadow-inner"
@@ -78,7 +79,6 @@ export default function CatalogPage() {
             </button>
           </div>
 
-          {/* Buscador de Ancho Dinámico */}
           <div className="relative max-w-xl">
             <input
               type="text"
@@ -92,16 +92,19 @@ export default function CatalogPage() {
         </div>
       </header>
 
-      {/* Banner Informativo */}
       <section className="bg-amber-50/80 border-b border-amber-200/60 p-3.5 text-amber-950 text-sm font-semibold text-center">
         <div className="max-w-6xl mx-auto flex items-center justify-center gap-2">
           <span>🛒 Reservá tus productos online y retirá por el local o pedí envío.</span>
         </div>
       </section>
 
-      {/* Grilla Adaptativa: 2 cols en celular -> 5 cols en monitor PC */}
       <section className="p-4 sm:p-6 max-w-6xl mx-auto">
-        {filteredProducts.length > 0 ? (
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-500 gap-3">
+            <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+            <p className="font-semibold text-sm">Cargando ofertas del canastito...</p>
+          </div>
+        ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
             {filteredProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -109,15 +112,12 @@ export default function CatalogPage() {
           </div>
         ) : (
           <div className="text-center py-16 text-slate-500 font-semibold bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-            No encontramos ofertas con ese nombre.
+            No hay ofertas disponibles en este momento.
           </div>
         )}
       </section>
 
-      {/* Botón Flotante */}
       <StickyCartBar onOpenDrawer={() => setIsDrawerOpen(true)} />
-
-      {/* Slider Carrito */}
       <CartDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
     </main>
   );
