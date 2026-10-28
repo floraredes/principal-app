@@ -9,63 +9,65 @@ export function ProductCard({ product }: { product: Product }) {
   const quantity = getItemQuantity(product.id);
 
   return (
-    <div className="border border-gray-200 rounded-2xl p-3 flex flex-col justify-between bg-white shadow-sm hover:shadow-md transition">
+    <div className="border border-slate-200/80 rounded-2xl md:rounded-3xl p-3 md:p-4 flex flex-col justify-between bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
       <div>
-        {/* Banner de Descuento */}
-        <div className="bg-amber-400 text-black text-xs font-bold px-2 py-1 rounded-md w-fit mb-2">
+        {/* Banner de Descuento con degradado */}
+        <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-lg w-fit mb-2 shadow-xs group-hover:scale-105 transition-transform">
           {product.discountPercentage}% OFF
         </div>
 
-        {/* Contenedor con altura definida (h-32) e Imagen */}
-        <div className="relative w-full h-32 mb-2 rounded-lg overflow-hidden bg-gray-100">
+        {/* Contenedor de la Imagen */}
+        <div className="relative w-full h-32 sm:h-40 md:h-44 mb-3 rounded-xl overflow-hidden bg-slate-100">
           <Image
             src={product.imageUrl}
             alt={product.name}
             fill
-            sizes="(max-width: 768px) 50vw, 200px"
-            className="object-cover"
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
 
         {/* Nombre y Precio */}
-        <h3 className="font-semibold text-gray-800 text-base line-clamp-2">
+        <h3 className="font-bold text-slate-800 text-sm sm:text-base line-clamp-2 leading-snug">
           {product.name}
         </h3>
-        <div className="mt-1">
-          <span className="text-xs text-gray-400 line-through mr-2">
+        <div className="mt-2 flex items-baseline gap-2">
+          <span className="text-xs sm:text-sm text-slate-400 line-through">
             ${product.originalPrice}
           </span>
-          <span className="text-lg font-bold text-emerald-600">
+          <span className="text-lg sm:text-xl font-extrabold text-emerald-600">
             ${product.discountPrice}
           </span>
         </div>
       </div>
 
-      {/* Selector + / - o Botón Agregar */}
-      <div className="mt-3">
+      {/* Controles de Cantidad */}
+      <div className="mt-4">
         {quantity === 0 ? (
           <button
             onClick={() => addItem(product)}
             disabled={product.stock === 0}
-            className="w-full py-2 bg-emerald-600 text-white rounded-xl font-bold text-sm active:scale-95 transition disabled:bg-gray-300"
+            className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-sm sm:text-base shadow-sm hover:shadow-md active:scale-95 transition-all disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none"
           >
             {product.stock > 0 ? 'Agregar' : 'Agotado'}
           </button>
         ) : (
-          <div className="flex items-center justify-between bg-emerald-50 border border-emerald-500 rounded-xl px-2 py-1">
+          <div className="flex items-center justify-between bg-emerald-50 border border-emerald-500/80 rounded-xl px-2 py-1 shadow-xs animate-fadeIn">
             <button
               onClick={() => removeItem(product.id)}
-              className="w-8 h-8 flex items-center justify-center font-bold text-emerald-700 text-lg active:scale-90"
+              className="w-9 h-9 flex items-center justify-center font-black text-emerald-800 text-lg hover:bg-emerald-100 rounded-lg active:scale-90 transition"
+              aria-label="Restar unidad"
             >
               -
             </button>
-            <span className="font-bold text-emerald-900 text-base">
+            <span className="font-black text-emerald-950 text-base sm:text-lg">
               {quantity}
             </span>
             <button
               onClick={() => addItem(product)}
               disabled={quantity >= product.stock}
-              className="w-8 h-8 flex items-center justify-center font-bold text-emerald-700 text-lg active:scale-90 disabled:opacity-30"
+              className="w-9 h-9 flex items-center justify-center font-black text-emerald-800 text-lg hover:bg-emerald-100 rounded-lg active:scale-90 disabled:opacity-30 transition"
+              aria-label="Sumar unidad"
             >
               +
             </button>

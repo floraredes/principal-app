@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Send } from 'lucide-react';
+import { ArrowLeft, Send, CheckCircle2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { CheckoutFormData } from '@/types';
 import { generateWhatsAppLink } from '@/lib/whatsapp';
 
-const PHARMACY_WHATSAPP_NUMBER = '5493810000000'; // Reemplazar por el número real
+const PHARMACY_WHATSAPP_NUMBER = '5493810000000';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -24,10 +24,10 @@ export default function CheckoutPage() {
   if (cart.length === 0) {
     return (
       <div className="p-6 text-center min-h-screen flex flex-col items-center justify-center">
-        <p className="text-lg text-gray-600 mb-4 font-semibold">El carrito está vacío</p>
+        <p className="text-lg text-slate-600 mb-4 font-bold">El carrito está vacío</p>
         <button
           onClick={() => router.push('/')}
-          className="bg-emerald-600 text-white font-bold py-3 px-6 rounded-xl"
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl shadow-md transition"
         >
           Volver al catálogo
         </button>
@@ -42,7 +42,7 @@ export default function CheckoutPage() {
       return;
     }
     if (formData.deliveryOption === 'delivery' && !formData.address) {
-      alert('Por favor ingresá tu dirección para el envío.');
+      alert('Por favor ingresá tu dirección de envío.');
       return;
     }
 
@@ -57,153 +57,171 @@ export default function CheckoutPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-50 pb-8">
-      {/* Header */}
-      <header className="bg-white border-b p-4 flex items-center gap-3 sticky top-0 z-10">
-        <button
-          onClick={() => router.back()}
-          className="p-2 rounded-full hover:bg-gray-100 text-gray-700"
-        >
-          <ArrowLeft className="w-6 h-6" />
-        </button>
-        <h1 className="text-xl font-bold text-gray-900">Finalizar Reserva</h1>
+    <main className="min-h-screen bg-slate-50/50 pb-12">
+      {/* Top Header */}
+      <header className="bg-white border-b border-slate-200/80 p-4 sticky top-0 z-10">
+        <div className="max-w-5xl mx-auto flex items-center gap-3">
+          <button
+            onClick={() => router.back()}
+            className="p-2.5 rounded-full hover:bg-slate-100 text-slate-700 transition"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900">Finalizar Reserva</h1>
+        </div>
       </header>
 
-      <form onSubmit={handleSubmit} className="p-4 space-y-6">
-        {/* Datos Personales */}
-        <section className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-          <h2 className="text-base font-bold text-gray-800 border-b pb-2">1. Tus Datos</h2>
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">
-              Nombre y Apellido *
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="Ej. Juan Pérez"
-              value={formData.fullName}
-              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-              className="w-full p-3 border rounded-xl text-base focus:ring-2 focus:ring-emerald-500 outline-none"
-            />
-          </div>
+      {/* Formulario en Layout Adaptativo */}
+      <form onSubmit={handleSubmit} className="max-w-5xl mx-auto p-4 sm:p-6 lg:grid lg:grid-cols-3 lg:gap-8 items-start space-y-6 lg:space-y-0">
+        
+        {/* Columna Izquierda (Pasos) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* 1. Datos Personales */}
+          <section className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+            <h2 className="text-base sm:text-lg font-black text-slate-800 border-b pb-2 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" /> 1. Tus Datos
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-extrabold text-slate-700 uppercase mb-1">
+                  Nombre y Apellido *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej. Juan Pérez"
+                  value={formData.fullName}
+                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  className="w-full p-3.5 border rounded-2xl text-base focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
+                />
+              </div>
 
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-1">
-              Teléfono / WhatsApp *
-            </label>
-            <input
-              type="tel"
-              required
-              placeholder="Ej. 3814123456"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full p-3 border rounded-xl text-base focus:ring-2 focus:ring-emerald-500 outline-none"
-            />
-          </div>
-        </section>
-
-        {/* Forma de Entrega */}
-        <section className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-          <h2 className="text-base font-bold text-gray-800 border-b pb-2">2. Forma de Entrega</h2>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, deliveryOption: 'pickup' })}
-              className={`p-3 rounded-xl border-2 font-bold text-sm transition ${
-                formData.deliveryOption === 'pickup'
-                  ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                  : 'border-gray-200 text-gray-600'
-              }`}
-            >
-              Lo retiro en el local
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, deliveryOption: 'delivery' })}
-              className={`p-3 rounded-xl border-2 font-bold text-sm transition ${
-                formData.deliveryOption === 'delivery'
-                  ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                  : 'border-gray-200 text-gray-600'
-              }`}
-            >
-              Envío a Domicilio
-            </button>
-          </div>
-
-          {/* Campo Condicional de Dirección */}
-          {formData.deliveryOption === 'delivery' && (
-            <div className="pt-2">
-              <label className="block text-sm font-bold text-gray-700 mb-1">
-                Dirección Completa *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Calle, número y barrio"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                className="w-full p-3 border rounded-xl text-base focus:ring-2 focus:ring-emerald-500 outline-none"
-              />
+              <div>
+                <label className="block text-xs font-extrabold text-slate-700 uppercase mb-1">
+                  Teléfono / WhatsApp *
+                </label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="Ej. 3814123456"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full p-3.5 border rounded-2xl text-base focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
+                />
+              </div>
             </div>
-          )}
-        </section>
+          </section>
 
-        {/* Forma de Pago */}
-        <section className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-4">
-          <h2 className="text-base font-bold text-gray-800 border-b pb-2">3. Forma de Pago</h2>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, paymentMethod: 'cash' })}
-              className={`p-3 rounded-xl border-2 font-bold text-sm transition ${
-                formData.paymentMethod === 'cash'
-                  ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                  : 'border-gray-200 text-gray-600'
-              }`}
-            >
-              Efectivo
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormData({ ...formData, paymentMethod: 'transfer' })}
-              className={`p-3 rounded-xl border-2 font-bold text-sm transition ${
-                formData.paymentMethod === 'transfer'
-                  ? 'border-emerald-600 bg-emerald-50 text-emerald-800'
-                  : 'border-gray-200 text-gray-600'
-              }`}
-            >
-              Transferencia
-            </button>
-          </div>
-        </section>
-
-        {/* Resumen del Pedido */}
-        <section className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm space-y-2">
-          <h2 className="text-base font-bold text-gray-800 border-b pb-2">Resumen</h2>
-          {cart.map((item) => (
-            <div key={item.product.id} className="flex justify-between text-sm py-1">
-              <span className="text-gray-700">
-                {item.quantity}x {item.product.name}
-              </span>
-              <span className="font-bold">
-                ${item.product.discountPrice * item.quantity}
-              </span>
+          {/* 2. Entrega */}
+          <section className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+            <h2 className="text-base sm:text-lg font-black text-slate-800 border-b pb-2 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" /> 2. Forma de Entrega
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, deliveryOption: 'pickup' })}
+                className={`p-4 rounded-2xl border-2 font-bold text-sm sm:text-base transition ${
+                  formData.deliveryOption === 'pickup'
+                    ? 'border-emerald-600 bg-emerald-50/60 text-emerald-900 shadow-xs'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                Retiro en Local
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, deliveryOption: 'delivery' })}
+                className={`p-4 rounded-2xl border-2 font-bold text-sm sm:text-base transition ${
+                  formData.deliveryOption === 'delivery'
+                    ? 'border-emerald-600 bg-emerald-50/60 text-emerald-900 shadow-xs'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                Envío a Domicilio
+              </button>
             </div>
-          ))}
-          <div className="border-t pt-2 flex justify-between text-lg font-extrabold text-emerald-800">
-            <span>Total a pagar:</span>
-            <span>${totalPrice}</span>
-          </div>
-        </section>
 
-        {/* Botón Acción Principal */}
-        <button
-          type="submit"
-          className="w-full bg-emerald-600 text-white font-extrabold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-lg active:scale-98 transition"
-        >
-          <Send className="w-5 h-5" />
-          Pedir por WhatsApp
-        </button>
+            {formData.deliveryOption === 'delivery' && (
+              <div className="pt-2 animate-fadeIn">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase mb-1">
+                  Dirección de Envío *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Calle, número y barrio"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full p-3.5 border rounded-2xl text-base focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition"
+                />
+              </div>
+            )}
+          </section>
+
+          {/* 3. Pago */}
+          <section className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+            <h2 className="text-base sm:text-lg font-black text-slate-800 border-b pb-2 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600" /> 3. Forma de Pago
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, paymentMethod: 'cash' })}
+                className={`p-4 rounded-2xl border-2 font-bold text-sm sm:text-base transition ${
+                  formData.paymentMethod === 'cash'
+                    ? 'border-emerald-600 bg-emerald-50/60 text-emerald-900 shadow-xs'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                Efectivo
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, paymentMethod: 'transfer' })}
+                className={`p-4 rounded-2xl border-2 font-bold text-sm sm:text-base transition ${
+                  formData.paymentMethod === 'transfer'
+                    ? 'border-emerald-600 bg-emerald-50/60 text-emerald-900 shadow-xs'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                }`}
+              >
+                Transferencia
+              </button>
+            </div>
+          </section>
+        </div>
+
+        {/* Columna Derecha (Resumen Fijo en Escritorio) */}
+        <div className="lg:sticky lg:top-24 space-y-4">
+          <section className="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-md space-y-3">
+            <h2 className="text-base font-black text-slate-900 border-b pb-2">Resumen del Pedido</h2>
+            <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+              {cart.map((item) => (
+                <div key={item.product.id} className="flex justify-between text-sm py-1.5 border-b border-slate-100">
+                  <span className="text-slate-700 font-medium">
+                    {item.quantity}x {item.product.name}
+                  </span>
+                  <span className="font-bold text-slate-900">
+                    ${item.product.discountPrice * item.quantity}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 flex justify-between text-xl font-black text-emerald-800">
+              <span>Total:</span>
+              <span>${totalPrice}</span>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full mt-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-4 rounded-2xl shadow-lg flex items-center justify-center gap-2 text-lg active:scale-98 transition-all"
+            >
+              <Send className="w-5 h-5" />
+              Pedir por WhatsApp
+            </button>
+          </section>
+        </div>
       </form>
     </main>
   );
