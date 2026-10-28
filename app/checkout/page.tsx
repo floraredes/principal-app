@@ -7,7 +7,7 @@ import { useCart } from '@/context/CartContext';
 import { CheckoutFormData } from '@/types';
 import { generateWhatsAppLink } from '@/lib/whatsapp';
 
-const PHARMACY_WHATSAPP_NUMBER = '5493810000000';
+const PHARMACY_WHATSAPP_NUMBER = '5493813488338';
 
 export default function CheckoutPage() {
   const router = useRouter();

@@ -4,8 +4,10 @@ export interface Product {
   originalPrice: number;
   discountPrice: number;
   discountPercentage: number;
+  promoType?: 'none' | 'percentage' | '2x1' | '3x2';
   stock: number;
   imageUrl: string;
+  imageUrls?: string[];
   expirationDate?: string;
 }
 

@@ -28,16 +28,23 @@ export default function CatalogPage() {
       if (error) {
         console.error('Error cargando catálogo:', error);
       } else if (data) {
-        const mappedProducts: Product[] = data.map((item) => ({
-          id: item.id,
-          name: item.name,
-          originalPrice: item.original_price,
-          discountPrice: item.discount_price,
-          discountPercentage: item.discount_percentage,
-          stock: item.stock,
-          imageUrl: item.image_url,
-          expirationDate: item.expiration_date,
-        }));
+        const mappedProducts: Product[] = data.map((item) => {
+          // Validación estricta para arreglos en JavaScript
+          const hasMultipleImages = Array.isArray(item.image_urls) && item.image_urls.length > 0;
+          
+          return {
+            id: item.id,
+            name: item.name,
+            originalPrice: item.original_price,
+            discountPrice: item.discount_price,
+            discountPercentage: item.discount_percentage,
+            promoType: item.promo_type || 'percentage',
+            stock: item.stock,
+            imageUrl: item.image_url,
+            imageUrls: hasMultipleImages ? item.image_urls : [item.image_url],
+            expirationDate: item.expiration_date,
+          };
+        });
         setProducts(mappedProducts);
       }
       setLoading(false);
@@ -106,8 +113,12 @@ export default function CatalogPage() {
           </div>
         ) : filteredProducts.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-5">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {filteredProducts.map((product, index) => (
+              <ProductCard 
+              key={product.id} 
+              product={product}
+              priority={index < 2}
+              />
             ))}
           </div>
         ) : (

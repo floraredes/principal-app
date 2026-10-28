@@ -9,6 +9,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -26,6 +27,14 @@ export default function AdminLoginPage() {
       setErrorMsg('Credenciales incorrectas o usuario no registrado.');
       setLoading(false);
     } else {
+      // Guardar preferencia de sesión
+      if (!rememberMe) {
+        // Si no desea mantener sesión, se puede marcar para limpiar al cerrar pestaña
+        sessionStorage.setItem('temp_session', 'true');
+      } else {
+        localStorage.setItem('remember_admin', 'true');
+      }
+
       router.push('/admin');
       router.refresh();
     }
@@ -80,10 +89,25 @@ export default function AdminLoginPage() {
             </div>
           </div>
 
+          {/* Casilla Mantener Sesión Iniciada */}
+          <div className="pt-1">
+            <label className="flex items-center gap-3 p-1 cursor-pointer select-none rounded-xl hover:bg-slate-50 transition">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-5 h-5 accent-emerald-600 rounded border-slate-300 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+              />
+              <span className="text-sm font-bold text-slate-700">
+                Mantener sesión iniciada
+              </span>
+            </label>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl text-base transition shadow-md mt-4 disabled:opacity-50"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl text-base transition shadow-md mt-4 disabled:opacity-50 active:scale-95"
           >
             {loading ? 'Verificando...' : 'Ingresar'}
           </button>

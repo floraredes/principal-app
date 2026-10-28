@@ -1,7 +1,6 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   images: {
     remotePatterns: [
       {
@@ -11,17 +10,8 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    agentFeedback: true,
-  },
-  cacheComponents: true,
-  partialPrefetching: true,
-  turbopack: {
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
+    // Si estás usando Next.js 15 con PPR o Instant Navigation
+    ppr: false,
   },
 };
 
