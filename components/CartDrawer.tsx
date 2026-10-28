@@ -64,14 +64,15 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           ) : (
             cart.map((item) => (
               <div key={item.product.id} className="flex gap-3 items-center pb-3 border-b border-gray-100">
-                {/* Foto */}
+                {/* Imagen */}
                 <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
-                  <Image
+                <Image
                     src={item.product.imageUrl}
                     alt={item.product.name}
                     fill
+                    sizes="80px"
                     className="object-cover"
-                  />
+                />
                 </div>
 
                 {/* Información */}

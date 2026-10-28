@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --foreground-rgb: 17, 24, 39;
@@ -10,11 +8,6 @@
 body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
-  font-size: 18px; /* Tamaño de fuente base grande para máxima legibilidad */
+  font-size: 18px;
   -webkit-tap-highlight-color: transparent;
-}
-
-/* Transiciones suaves para cajones y modales */
-.drawer-overlay {
-  background-color: rgba(0, 0, 0, 0.5);
 }

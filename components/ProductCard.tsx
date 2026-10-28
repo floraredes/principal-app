@@ -16,12 +16,13 @@ export function ProductCard({ product }: { product: Product }) {
           {product.discountPercentage}% OFF
         </div>
 
-        {/* Imagen */}
+        {/* Contenedor con altura definida (h-32) e Imagen */}
         <div className="relative w-full h-32 mb-2 rounded-lg overflow-hidden bg-gray-100">
           <Image
             src={product.imageUrl}
             alt={product.name}
             fill
+            sizes="(max-width: 768px) 50vw, 200px"
             className="object-cover"
           />
         </div>
