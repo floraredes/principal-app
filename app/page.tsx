@@ -65,9 +65,9 @@ export default function CatalogPage() {
             <div className="flex items-center gap-2">
               <Store className="w-7 h-7 text-amber-400 hidden sm:block" />
               <div>
-                <h1 className="text-lg sm:text-2xl font-black tracking-wide">FARMACIA SAN JOSÉ</h1>
+                <h1 className="text-lg sm:text-2xl font-black tracking-wide">FARMACIA PRINCIPAL</h1>
                 <p className="text-xs sm:text-sm text-emerald-100 flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-amber-300" /> Av. Principal 1234 • Canastito de Ofertas
+                  <MapPin className="w-3.5 h-3.5 text-amber-300" /> Echeverría 394, San Miguel de Tucumán
                 </p>
               </div>
             </div>
