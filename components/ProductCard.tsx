@@ -50,20 +50,23 @@ export function ProductCard({
 
   const is2x1 = product.promoType === '2x1';
   const is3x2 = product.promoType === '3x2';
+  const isNone = product.promoType === 'none';
 
   return (
     <>
       <div className="border border-slate-200/80 rounded-2xl md:rounded-3xl p-3 md:p-4 flex flex-col justify-between bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
         <div>
-          {/* Badge de Promoción */}
-          <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-lg w-fit mb-2 shadow-xs group-hover:scale-105 transition-transform">
-            {is2x1 ? 'PROMO 2x1' : is3x2 ? 'PROMO 3x2' : `${product.discountPercentage}% OFF`}
-          </div>
+          {/* Badge de Promoción Oculto si no hay descuento */}
+          {!isNone && (
+            <div className="bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-lg w-fit mb-2 shadow-xs group-hover:scale-105 transition-transform">
+              {is2x1 ? 'PROMO 2x1' : is3x2 ? 'PROMO 3x2' : `${product.discountPercentage}% OFF`}
+            </div>
+          )}
 
           {/* Contenedor de Imagen */}
           <div
             onClick={handleOpenZoom}
-            className="relative w-full h-32 sm:h-40 md:h-44 mb-3 rounded-xl overflow-hidden bg-slate-100 cursor-pointer group/img"
+            className={`relative w-full h-32 sm:h-40 md:h-44 mb-3 rounded-xl overflow-hidden bg-slate-100 cursor-pointer group/img ${isNone ? 'mt-2' : ''}`}
             title="Toca para ver las fotos y ampliar"
           >
             <Image
@@ -84,14 +87,19 @@ export function ProductCard({
             </div>
           </div>
 
-          {/* Nombre */}
           <h3 className="font-bold text-slate-800 text-sm sm:text-base line-clamp-2 leading-snug">
             {product.name}
           </h3>
 
-          {/* Visualización de Precios Adaptativo */}
+          {/* Precios Adaptativos */}
           <div className="mt-2">
-            {is2x1 ? (
+            {isNone ? (
+              <div className="flex items-baseline gap-1">
+                <span className="text-lg sm:text-xl font-extrabold text-emerald-600">
+                  ${product.originalPrice}
+                </span>
+              </div>
+            ) : is2x1 ? (
               <div>
                 <div className="flex items-baseline gap-1">
                   <span className="text-lg sm:text-xl font-extrabold text-emerald-600">
@@ -166,7 +174,6 @@ export function ProductCard({
                 </button>
               </div>
 
-              {/* Sugerencia cuando falta 1 unidad para completar la oferta */}
               {is2x1 && quantity % 2 !== 0 && quantity < product.stock && (
                 <p className="text-[11px] font-extrabold text-amber-900 bg-amber-100/90 border border-amber-300 rounded-lg px-2 py-1 text-center animate-pulse flex items-center justify-center gap-1">
                   <Gift className="w-3.5 h-3.5 text-amber-700 shrink-0" /> ¡Sumá 1 más y va GRATIS!
